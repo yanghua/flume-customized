@@ -36,12 +36,12 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
     private static final Logger logger       = LoggerFactory.getLogger(ReliableSpoolFileEventReader.class);
     static final         String metaFileName = ".flumespooltailfile-main.meta";
 
-    private final File              spoolDirectory;
-    private final String            completedSuffix;
-    private final String            deserializerType;
-    private final Context           deserializerContext;
-    private final Pattern           ignorePattern;
-    private final Pattern           targetPattern;
+    private final File                                        spoolDirectory;
+    private final String                                      completedSuffix;
+    private final String                                      deserializerType;
+    private final Context                                     deserializerContext;
+    private final Pattern                                     ignorePattern;
+    private final Pattern                                     targetPattern;
     private final String                                      targetYoungestFileName;
     private final String                                      targetFilename;
     private final File                                        metaFile;
@@ -97,28 +97,28 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
 
         // validate delete policy
         if (!deletePolicy.equalsIgnoreCase(DeletePolicy.NEVER.name()) &&
-            !deletePolicy.equalsIgnoreCase(DeletePolicy.IMMEDIATE.name())) {
+                !deletePolicy.equalsIgnoreCase(DeletePolicy.IMMEDIATE.name())) {
             throw new IllegalArgumentException("Delete policies other than " +
-                                                   "NEVER and IMMEDIATE are not yet supported");
+                    "NEVER and IMMEDIATE are not yet supported");
         }
 
         if (logger.isDebugEnabled()) {
             logger.debug("Initializing {} with directory={}, metaDir={}, " +
-                             "deserializer={}",
-                         new Object[]{ReliableSpoolFileEventReader.class.getSimpleName(),
-                                      spoolDirectory, trackerDirPath, deserializerType});
+                            "deserializer={}",
+                    new Object[]{ReliableSpoolFileEventReader.class.getSimpleName(),
+                            spoolDirectory, trackerDirPath, deserializerType});
         }
 
         // Verify directory exists and is readable/writable
         Preconditions.checkState(spoolDirectory.exists(),
-                                 "Directory does not exist: " + spoolDirectory.getAbsolutePath());
+                "Directory does not exist: " + spoolDirectory.getAbsolutePath());
         Preconditions.checkState(spoolDirectory.isDirectory(),
-                                 "Path is not a directory: " + spoolDirectory.getAbsolutePath());
+                "Path is not a directory: " + spoolDirectory.getAbsolutePath());
 
         // Do a canary test to make sure we have access to spooling directory
         try {
             File canary = File.createTempFile("flume-spooldir-perm-check-", ".canary",
-                                              spoolDirectory);
+                    spoolDirectory);
             Files.write("testing flume file permissions\n", canary, Charsets.UTF_8);
             List<String> lines = Files.readLines(canary, Charsets.UTF_8);
             Preconditions.checkState(!lines.isEmpty(), "Empty canary file %s", canary);
@@ -128,7 +128,7 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
             logger.debug("Successfully created and deleted canary file: {}", canary);
         } catch (IOException e) {
             throw new FlumeException("Unable to read and modify files" +
-                                         " in the spooling directory: " + spoolDirectory, e);
+                    " in the spooling directory: " + spoolDirectory, e);
         }
 
         this.spoolDirectory = spoolDirectory;
@@ -161,14 +161,14 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
         if (!trackerDirectory.exists()) {
             if (!trackerDirectory.mkdir()) {
                 throw new IOException("Unable to mkdir nonexistent meta directory " +
-                                          trackerDirectory);
+                        trackerDirectory);
             }
         }
 
         // ensure that the meta directory is a directory
         if (!trackerDirectory.isDirectory()) {
             throw new IOException("Specified meta directory is not a directory" +
-                                      trackerDirectory);
+                    trackerDirectory);
         }
 
         this.metaFile = new File(trackerDirectory, metaFileName);
@@ -202,7 +202,7 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
         if (!committed) {
             if (!currentFile.isPresent()) {
                 throw new IllegalStateException("File should not roll when " +
-                                                    "commit is outstanding.");
+                        "commit is outstanding.");
             }
 
             // logger.info("Last read was never committed - resetting mark position.");
@@ -218,15 +218,15 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
             }
         }
 
-        EventDeserializer des = currentFile.get().getDeserializer();
-        List<Event> events = des.readEvents(numEvents);
+        EventDeserializer des    = currentFile.get().getDeserializer();
+        List<Event>       events = des.readEvents(numEvents);
 
 	    /* It's possible that the last read took us just up to a file boundary.
          * If so, try to roll to the next file, if there is one. */
         if (events.isEmpty()) {
 
-            boolean isTargetFile = isTargetFile(currentFile);
-            boolean isYoungestFile = this.targetYoungestFileName.equals(currentFile.get().getFile().getName());
+            boolean isTargetFile    = isTargetFile(currentFile);
+            boolean isYoungestFile  = this.targetYoungestFileName.equals(currentFile.get().getFile().getName());
             boolean isExistNextFile = isExistNextFile();
 
             if (logger.isDebugEnabled()) {
@@ -238,8 +238,8 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
             }
 
             if (!isTargetFile               //	Only CurrentFile is no longer the target, at the meanwhile, next file exists.
-                && !isYoungestFile
-                && isExistNextFile) {       //	Then deal with the history file(ever target file)
+                    && !isYoungestFile
+                    && isExistNextFile) {       //	Then deal with the history file(ever target file)
                 logger.info("File:{} is no longer a TARGET File, which will no longer be monitored.", currentFile.get().getFile().getName());
                 retireCurrentFile();
                 //get next file or refresh current file for new log data
@@ -292,9 +292,9 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
             public boolean accept(File candidate) {
                 String fileName = candidate.getName();
                 if ((candidate.isDirectory()) ||
-                    (fileName.endsWith(completedSuffix)) ||
-                    (fileName.startsWith(".")) ||
-                    (ignorePattern.matcher(fileName).matches())) {
+                        (fileName.endsWith(completedSuffix)) ||
+                        (fileName.startsWith(".")) ||
+                        (ignorePattern.matcher(fileName).matches())) {
                     return false;
                 }
 
@@ -302,8 +302,8 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
                 //note: for log4j 1.x DailyRollingFileAppender
                 //the problem is : the newest log file name does not contain date
                 if (targetPattern.matcher(fileName).matches()
-                    || fileName.equals(targetYoungestFileName)
-                    ) {
+                        || fileName.equals(targetYoungestFileName)
+                        ) {
                     return true;
                 }
                 return false;
@@ -328,9 +328,9 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
      * @return
      */
     private boolean isTargetFile(Optional<FileInfo> currentFile2) {
-        String inputFilename = currentFile2.get().getFile().getName();
-        SimpleDateFormat dateFormat = new SimpleDateFormat(targetFilename);
-        String substringOfTargetFile = dateFormat.format(new Date());
+        String           inputFilename         = currentFile2.get().getFile().getName();
+        SimpleDateFormat dateFormat            = new SimpleDateFormat(targetFilename);
+        String           substringOfTargetFile = dateFormat.format(new Date());
 
         if (inputFilename.toLowerCase().contains(substringOfTargetFile.toLowerCase())) {
             return true;
@@ -371,7 +371,7 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
         } else {
             // TODO: implement delay in the future
             throw new IllegalArgumentException("Unsupported delete policy: " +
-                                                   deletePolicy);
+                    deletePolicy);
         }
     }
 
@@ -398,22 +398,22 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
 	       */
             if (Files.equal(currentFile.get().getFile(), dest)) {
                 logger.warn("Completed file " + dest +
-                                " already exists, but files match, so continuing.");
+                        " already exists, but files match, so continuing.");
                 boolean deleted = fileToRoll.delete();
                 if (!deleted) {
                     logger.error("Unable to delete file " + fileToRoll.getAbsolutePath() +
-                                     ". It will likely be ingested another time.");
+                            ". It will likely be ingested another time.");
                 }
             } else {
                 String message = "File name has been re-used with different" +
-                    " files. Spooling assumptions violated for " + dest;
+                        " files. Spooling assumptions violated for " + dest;
                 throw new IllegalStateException(message);
             }
 
             // Dest file exists and not on windows
         } else if (dest.exists()) {
             String message = "File name has been re-used with different" +
-                " files. Spooling assumptions violated for " + dest;
+                    " files. Spooling assumptions violated for " + dest;
             throw new IllegalStateException(message);
 
             // Destination file does not already exist. We are good to go!
@@ -425,12 +425,12 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
                 // now we no longer need the meta file
                 deleteMetaFile();
             } else {
-	        /* If we are here then the file cannot be renamed for a reason other
+            /* If we are here then the file cannot be renamed for a reason other
 	         * than that the destination file exists (actually, that remains
 	         * possible w/ small probability due to TOC-TOU conditions).*/
                 String message = "Unable to move " + fileToRoll + " to " + dest +
-                    ". This will likely cause duplicate events. Please verify that " +
-                    "flume has sufficient permissions to perform these operations.";
+                        ". This will likely cause duplicate events. Please verify that " +
+                        "flume has sufficient permissions to perform these operations.";
                 throw new FlumeException(message);
             }
         }
@@ -475,9 +475,9 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
             public boolean accept(File candidate) {
                 String fileName = candidate.getName();
                 if ((candidate.isDirectory()) ||
-                    (fileName.endsWith(completedSuffix)) ||
-                    (fileName.startsWith(".")) ||
-                    (ignorePattern.matcher(fileName).matches())) {
+                        (fileName.endsWith(completedSuffix)) ||
+                        (fileName.startsWith(".")) ||
+                        (ignorePattern.matcher(fileName).matches())) {
                     return false;
                 }
 
@@ -485,8 +485,8 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
                 //note: for log4j 1.x DailyRollingFileAppender
                 //the problem is : the newest log file name does not contain date
                 if (targetPattern.matcher(fileName).matches()
-                    || fileName.equals(targetYoungestFileName)
-                    ) {
+                        || fileName.equals(targetYoungestFileName)
+                        ) {
                     return true;
                 }
                 return false;
@@ -547,7 +547,7 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
             // roll the meta file, if needed
             String nextPath = file.getPath();
             PositionTracker tracker =
-                DurablePositionTracker.getInstance(metaFile, nextPath);
+                    DurablePositionTracker.getInstance(metaFile, nextPath);
             if (!tracker.getTarget().equals(nextPath)) {
                 tracker.close();
                 deleteMetaFile();
@@ -556,15 +556,15 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
 
             // sanity check
             Preconditions.checkState(tracker.getTarget().equals(nextPath),
-                                     "Tracker target %s does not equal expected filename %s",
-                                     tracker.getTarget(), nextPath);
+                    "Tracker target %s does not equal expected filename %s",
+                    tracker.getTarget(), nextPath);
 
             ResettableInputStream in =
-                new ResettableFileInputStream(file, tracker,
-                                              ResettableFileInputStream.DEFAULT_BUF_SIZE, inputCharset,
-                                              decodeErrorPolicy);
+                    new ResettableFileInputStream(file, tracker,
+                            ResettableFileInputStream.DEFAULT_BUF_SIZE, inputCharset,
+                            decodeErrorPolicy);
             EventDeserializer deserializer = EventDeserializerFactory.getInstance
-                (deserializerType, deserializerContext, in);
+                    (deserializerType, deserializerContext, in);
 
             return Optional.of(new FileInfo(file, deserializer));
         } catch (FileNotFoundException e) {
@@ -659,13 +659,13 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
         private boolean           annotateFileName       = DEFAULT_FILENAME_HEADER;
         private String            fileNameHeader         = DEFAULT_FILENAME_HEADER_KEY;
         private boolean           annotateBaseName       = DEFAULT_BASENAME_HEADER;
-        private String                                                  baseNameHeader      = DEFAULT_BASENAME_HEADER_KEY;
-        private String                                                  deserializerType    = DEFAULT_DESERIALIZER;
-        private Context                                                 deserializerContext = new Context();
-        private String                                                  deletePolicy        = DEFAULT_DELETE_POLICY;
-        private String                                                  inputCharset        = DEFAULT_INPUT_CHARSET;
-        private DecodeErrorPolicy                                       decodeErrorPolicy   = DecodeErrorPolicy.valueOf(DEFAULT_DECODE_ERROR_POLICY.toUpperCase());
-        private ConsumeOrder consumeOrder        = DEFAULT_CONSUME_ORDER;
+        private String            baseNameHeader         = DEFAULT_BASENAME_HEADER_KEY;
+        private String            deserializerType       = DEFAULT_DESERIALIZER;
+        private Context           deserializerContext    = new Context();
+        private String            deletePolicy           = DEFAULT_DELETE_POLICY;
+        private String            inputCharset           = DEFAULT_INPUT_CHARSET;
+        private DecodeErrorPolicy decodeErrorPolicy      = DecodeErrorPolicy.valueOf(DEFAULT_DECODE_ERROR_POLICY.toUpperCase());
+        private ConsumeOrder      consumeOrder           = DEFAULT_CONSUME_ORDER;
 
         public Builder spoolDirectory(File directory) {
             this.spoolDirectory = directory;
@@ -754,10 +754,10 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
 
         public ReliableSpoolFileEventReader build() throws IOException {
             return new ReliableSpoolFileEventReader(spoolDirectory, completedSuffix,
-                                                    ignorePattern, targetPattern, targetYoungestFileName, trackerDirPath, annotateFileName, fileNameHeader,
-                                                    annotateBaseName, baseNameHeader, deserializerType,
-                                                    deserializerContext, deletePolicy, inputCharset, decodeErrorPolicy,
-                                                    consumeOrder, targetFilename);
+                    ignorePattern, targetPattern, targetYoungestFileName, trackerDirPath, annotateFileName, fileNameHeader,
+                    annotateBaseName, baseNameHeader, deserializerType,
+                    deserializerContext, deletePolicy, inputCharset, decodeErrorPolicy,
+                    consumeOrder, targetFilename);
         }
 
 

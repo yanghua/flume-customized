@@ -34,7 +34,7 @@ public class MultiLineDeserializer implements EventDeserializer {
 
     private static final Logger logger = LoggerFactory.getLogger
             (LineDeserializer.class);
-    private static final Gson GSON = new Gson();
+    private static final Gson   GSON   = new Gson();
 
     private final    ResettableInputStream in;
     private final    Charset               outputCharset;
@@ -134,10 +134,10 @@ public class MultiLineDeserializer implements EventDeserializer {
     // TODO: consider not returning a final character that is a high surrogate
     // when truncating
     private String readLine() throws IOException {
-        int lineNum = 0;
-        int charNum = 0;
-        long readBeforeOffset;
-        StringBuilder sb = new StringBuilder();
+        int           lineNum = 0;
+        int           charNum = 0;
+        long          readBeforeOffset;
+        StringBuilder sb      = new StringBuilder();
 
         do {
             readBeforeOffset = in.tell();
@@ -176,9 +176,9 @@ public class MultiLineDeserializer implements EventDeserializer {
     }
 
     private String readSingleLine() throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int c;
-        int readChars = 0;
+        StringBuilder sb        = new StringBuilder();
+        int           c;
+        int           readChars = 0;
         while ((c = in.readChar()) != -1) {
             readChars++;
 
@@ -187,7 +187,7 @@ public class MultiLineDeserializer implements EventDeserializer {
                 break;
             }
 
-            sb.append((char)c);
+            sb.append((char) c);
         }
 
         if (readChars > 0) {

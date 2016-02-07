@@ -55,34 +55,34 @@ public class MessagebusSink extends AbstractSink implements Configurable {
     @Override
     public void configure(Context context) {
         zkConnectionStr = context.getString(MessagebusSinkConstants.ZK_CONNECTION_STR,
-                                   MessagebusSinkConstants.DEFAULT_ZK_CONNECTION_STR);
+                MessagebusSinkConstants.DEFAULT_ZK_CONNECTION_STR);
 
         queueSecret = context.getString(MessagebusSinkConstants.SOURCE_SECRET);
         if (Strings.isNullOrEmpty(queueSecret)) {
             logger.error("the Property '" + MessagebusSinkConstants.SOURCE_SECRET + "' is a MUST key," +
-                             " but not be configurated!" );
+                    " but not be configurated!");
             throw new RuntimeException("the Property '" + MessagebusSinkConstants.SOURCE_SECRET + "' is a MUST key," +
-                                           " but not be configurated!");
+                    " but not be configurated!");
         }
 
         produceToken = context.getString(MessagebusSinkConstants.STREAM_TOKEN);
         if (Strings.isNullOrEmpty(produceToken)) {
             logger.error("the Property '" + MessagebusSinkConstants.STREAM_TOKEN + "' is a MUST key," +
-                             " but not be configurated!");
+                    " but not be configurated!");
             throw new RuntimeException("the Property '" + MessagebusSinkConstants.STREAM_TOKEN + "' is a MUST key," +
-                                           " but not be configurated!");
+                    " but not be configurated!");
         }
 
         targetQueue = context.getString(MessagebusSinkConstants.SINK_NAME);
         if (Strings.isNullOrEmpty(targetQueue)) {
             logger.error("the Property '" + MessagebusSinkConstants.SINK_NAME + "' is a MUST key" +
-                             " but not be configurated!");
+                    " but not be configurated!");
             throw new RuntimeException("the Property '" + MessagebusSinkConstants.SINK_NAME + "' is a MUST key" +
-                                           " but not be configurated!");
+                    " but not be configurated!");
         }
 
         batchSize = context.getInteger(MessagebusSinkConstants.BATCH_SIZE,
-                                       MessagebusSinkConstants.DEFAULT_BATCH_SIZE);
+                MessagebusSinkConstants.DEFAULT_BATCH_SIZE);
         messageList = new ArrayList<>(batchSize);
 
         if (logger.isDebugEnabled()) {
@@ -95,10 +95,10 @@ public class MessagebusSink extends AbstractSink implements Configurable {
 
     @Override
     public Status process() throws EventDeliveryException {
-        Status result = Status.READY;
-        Channel channel = getChannel();
+        Status      result      = Status.READY;
+        Channel     channel     = getChannel();
         Transaction transaction = null;
-        Event event = null;
+        Event       event       = null;
 
         try {
             long processedEvents = 0;
@@ -107,15 +107,15 @@ public class MessagebusSink extends AbstractSink implements Configurable {
             transaction.begin();
 
             messageList.clear();
-            for (; processedEvents < batchSize; processedEvents +=1) {
+            for (; processedEvents < batchSize; processedEvents += 1) {
                 event = channel.take();
 
                 if (event == null) {
                     break;
                 }
 
-                byte[] eventBody = event.getBody();
-                Map<String, String> headers = event.getHeaders();
+                byte[]              eventBody = event.getBody();
+                Map<String, String> headers   = event.getHeaders();
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("{Event} " + new String(eventBody, "UTF-8"));
@@ -131,8 +131,8 @@ public class MessagebusSink extends AbstractSink implements Configurable {
 
             if (processedEvents > 0) {
                 messagebus.batchProduce(queueSecret, targetQueue,
-                                        messageList.toArray(new Message[messageList.size()]),
-                                        produceToken);
+                        messageList.toArray(new Message[messageList.size()]),
+                        produceToken);
             }
 
             transaction.commit();

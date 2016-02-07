@@ -66,24 +66,24 @@ public class SpoolFileSource extends AbstractSource implements Configurable, Eve
 
         try {
             reader = (new ReliableSpoolFileEventReader.Builder())
-                .spoolDirectory(directory)
-                .completedSuffix(completedSuffix)
-                .ignorePattern(ignorePattern)
-                .targetPattern(targetPattern)
-                .targetYoungestFileName(targetYoungestFileName)
-                .targetFilename(targetFilename)
-                .trackerDirPath(trackerDirPath)
-                .annotateFileName(fileHeader)
-                .fileNameHeader(fileHeaderKey)
-                .annotateBaseName(basenameHeader)
-                .baseNameHeader(basenameHeaderKey)
-                .deserializerType(deserializerType)
-                .deserializerContext(deserializerContext)
-                .deletePolicy(deletePolicy)
-                .inputCharset(inputCharset)
-                .decodeErrorPolicy(decodeErrorPolicy)
-                .consumeOrder(consumeOrder)
-                .build();
+                    .spoolDirectory(directory)
+                    .completedSuffix(completedSuffix)
+                    .ignorePattern(ignorePattern)
+                    .targetPattern(targetPattern)
+                    .targetYoungestFileName(targetYoungestFileName)
+                    .targetFilename(targetFilename)
+                    .trackerDirPath(trackerDirPath)
+                    .annotateFileName(fileHeader)
+                    .fileNameHeader(fileHeaderKey)
+                    .annotateBaseName(basenameHeader)
+                    .baseNameHeader(basenameHeaderKey)
+                    .deserializerType(deserializerType)
+                    .deserializerContext(deserializerContext)
+                    .deletePolicy(deletePolicy)
+                    .inputCharset(inputCharset)
+                    .decodeErrorPolicy(decodeErrorPolicy)
+                    .consumeOrder(consumeOrder)
+                    .build();
         } catch (IOException e) {
             throw new FlumeException("Error instantiating spooling and tail event parser", e);
         }
@@ -182,14 +182,14 @@ public class SpoolFileSource extends AbstractSource implements Configurable, Eve
                         reader.commit();
                     } catch (ChannelException ex) {
                         logger.warn("The channel is full, and cannot write data now. The " +
-                                        "source will try again after " + String.valueOf(backoffInterval) +
-                                        " milliseconds");
+                                "source will try again after " + String.valueOf(backoffInterval) +
+                                " milliseconds");
                         hitChannelException = true;
                         if (backoff) {
                             TimeUnit.MILLISECONDS.sleep(backoffInterval);
                             backoffInterval = backoffInterval << 1;
                             backoffInterval = backoffInterval >= maxBackoff ? maxBackoff :
-                                              backoffInterval;
+                                    backoffInterval;
                         }
                         continue;
                     }
@@ -200,8 +200,8 @@ public class SpoolFileSource extends AbstractSource implements Configurable, Eve
                 // logger.info("Spooling Directory Tail File Source runner has shutdown.");
             } catch (Throwable t) {
                 logger.error("FATAL: " + SpoolFileSource.this.toString() + ": " +
-                                 "Uncaught exception in SpoolDirectoryTailSourceSource thread. " +
-                                 "Restart or reconfigure Flume to continue processing.", t);
+                        "Uncaught exception in SpoolDirectoryTailSourceSource thread. " +
+                        "Restart or reconfigure Flume to continue processing.", t);
                 hasFatalError = true;
                 Throwables.propagate(t);
             }
