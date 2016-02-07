@@ -36,23 +36,23 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
     private static final Logger logger       = LoggerFactory.getLogger(ReliableSpoolFileEventReader.class);
     static final         String metaFileName = ".flumespooltailfile-main.meta";
 
-    private final File                                        spoolDirectory;
-    private final String                                      completedSuffix;
-    private final String                                      deserializerType;
-    private final Context                                     deserializerContext;
-    private final Pattern                                     ignorePattern;
-    private final Pattern                                     targetPattern;
-    private final String                                      targetYoungestFileName;
-    private final String                                      targetFilename;
-    private final File                                        metaFile;
-    private final boolean                                     annotateFileName;
-    private final boolean                                     annotateBaseName;
-    private final String                                      fileNameHeader;
-    private final String                                      baseNameHeader;
-    private final String                                      deletePolicy;
-    private final Charset                                     inputCharset;
-    private final DecodeErrorPolicy                           decodeErrorPolicy;
-    private final SpoolFileSourceConfigConstants.ConsumeOrder consumeOrder;
+    private final File              spoolDirectory;
+    private final String            completedSuffix;
+    private final String            deserializerType;
+    private final Context           deserializerContext;
+    private final Pattern           ignorePattern;
+    private final Pattern           targetPattern;
+    private final String            targetYoungestFileName;
+    private final String            targetFilename;
+    private final File              metaFile;
+    private final boolean           annotateFileName;
+    private final boolean           annotateBaseName;
+    private final String            fileNameHeader;
+    private final String            baseNameHeader;
+    private final String            deletePolicy;
+    private final Charset           inputCharset;
+    private final DecodeErrorPolicy decodeErrorPolicy;
+    private final ConsumeOrder      consumeOrder;
 
     private Optional<FileInfo> currentFile  = Optional.absent();
     /**
@@ -426,7 +426,7 @@ public class ReliableSpoolFileEventReader implements ReliableEventReader {
                 deleteMetaFile();
             } else {
             /* If we are here then the file cannot be renamed for a reason other
-	         * than that the destination file exists (actually, that remains
+             * than that the destination file exists (actually, that remains
 	         * possible w/ small probability due to TOC-TOU conditions).*/
                 String message = "Unable to move " + fileToRoll + " to " + dest +
                         ". This will likely cause duplicate events. Please verify that " +
